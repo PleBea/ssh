@@ -77,7 +77,13 @@ func Get() []Connection {
 	return Parse(data)
 }
 
-func Create() {
+func handleError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Create(connection Connection) {
 	configPath := GetConfigPath()
 
 	_, err := os.Stat(configPath)
@@ -85,4 +91,27 @@ func Create() {
 		os.Create(configPath)
 	}
 
+	file, err := os.OpenFile(configPath, os.O_APPEND|os.O_WRONLY, 0644)
+	handleError(err)
+
+	defer file.Close()
+
+	_, err = file.WriteString("\n")
+	handleError(err)
+
+	_, err = file.WriteString("Host " + connection.Host + "\n")
+	handleError(err)
+
+	_, err = file.WriteString("  HostName " + connection.HostName + "\n")
+	handleError(err)
+
+	_, err = file.WriteString("  User " + connection.User + "\n")
+	handleError(err)
+
+	_, err = file.WriteString("  Port " + connection.Port + "\n")
+	handleError(err)
+
+	file.Sync()
+
+	return
 }
